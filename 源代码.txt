@@ -1,0 +1,100 @@
+import java.util.Scanner;
+public class pack{
+    static int [] vs=new int[61];
+    static double bestn,mp;
+    static int [] best=new int[61];
+    static int [] sw=new int[61];
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);//输入
+        int[] n =new int[7];
+        int[] l =new int[61];
+        double[][] value = new double[7][161];
+        int[][][] wei = new int[7][161][161];
+        int[][] K = new int[7][161];//n和l代表物品数量和有多少行的物品，value是物品价值，wei是存储物品质量，K是背包容量上限。
+
+        
+
+        for(int m=0;m<7;m++){
+            n[m] = sc.nextInt();
+            l[m] = sc.nextInt();
+            for(int i=0;i<n[m];i++){
+                value [m][i] = sc.nextDouble();
+            }
+            for(int j=0;j<l[m];j++){
+                for(int i=0;i<n[m];i++){
+                    wei [m][j][i]=sc.nextInt();
+                }
+            }
+
+            for(int i=0;i<l[m];i++){
+                K [m][i] = sc.nextInt();
+            }
+            pack.jav(value[m],n[m],l[m],K[m],wei[m]);
+        }
+
+    }
+
+
+    public static void jav(double[] value, int n,int l,int[] K,int[][] wei){
+
+         double mp=0;
+         vs=new int[61];
+         bestn=mp=0;
+        best=new int[61];
+        sw=new int[61];
+        Backtrack(0,value,n,l, K, wei);
+        System.out.print("放入的物品x[");
+        for(int i=0;i<n;++i)
+            System.out.print(best[i]+" ");
+        System.out.println("]");
+        System.out.println("总价值为"+bestn);//输出放入物品以及物品最优总价值
+
+
+    }
+    
+    public  static double Bound(int i,int n,double value[])//布尔型函数，判断界限(即当前背包约束加上新物品的约束是否会超出背包约束上限)
+    {
+        double np=0;//利用循环遍历当前物品的所有属性
+        while (i<n){       
+            np+=value[i];
+            i++;
+        }
+        return mp+np;
+    }//回溯函数
+    public static void Backtrack(int t,double[] value, int n,int l,int[] K,int[][] wei)
+    {
+        int j;//已搜索到根节点
+        if(t>=n){
+            if(mp<=bestn) return;//如果搜索到叶子节点
+            for(j=0;j<n;++j)
+                best[j]=vs[j];//最大价值变成当前背包得总价值，保存最优选取方案
+            bestn=mp;
+            return;
+        }
+        
+        int flag=0;
+        for(int i=0;i<l;++i){
+            if(sw[i]+wei[i][t]>K[i]){
+                flag=1;
+                break;
+            }//回溯判断一下是否所有的背包都符合条件，如果符合则装入物品，递归下一物品，不符合则直接递归,通过判断来知道是否要将物品放入背包。
+        }
+        /*搜索左子树*/
+        if(flag==0){
+            vs[t]=1;
+            for(int i=0;i<l;++i)
+               sw[i]+=wei[i][t];
+            mp+=value[t];
+            Backtrack(t+1,value,n,l,K,wei);//调用回溯法
+            for(int i=0;i<l;++i)
+                sw[i]-=wei[i][t];
+            mp-=value[t];
+        }
+        /*搜索右子树*/
+        if (Bound(t+1,n,value)>bestn){
+            vs[t]=0;
+            Backtrack(t+1,value,n,l,K,wei);
+        }//判断左节点是否为可行节点，当左节点可行，就优先搜索左子树，不满足则进入右子树。
+    }
+
+}
